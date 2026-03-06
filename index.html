@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountant Ability</title>
+    <style>
+        /* Base Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* Screen 1: Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0 5%;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        }
+
+        .hero-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .hero-text {
+            flex: 1;
+        }
+
+        .hero-text h1 {
+            font-size: 4rem;
+            margin: 0 0 20px 0;
+            line-height: 1.1;
+            color: #0369a1;
+        }
+
+        .hero-demo {
+            flex: 1;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+        }
+
+        .hero-demo iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Animated Arrow */
+        .arrow-down {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            color: #0284c7;
+            text-decoration: none;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-20px) translateX(-50%); }
+            60% { transform: translateY(-10px) translateX(-50%); }
+        }
+
+        /* Screen 2: Pricing Section */
+        .pricing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 5%;
+            background-color: #ffffff;
+        }
+
+        .pricing h2 {
+            font-size: 3rem;
+            margin-bottom: 50px;
+            color: #0f172a;
+        }
+
+        .pricing-cards {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 40px;
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: #0284c7;
+        }
+
+        .card h3 {
+            font-size: 2rem;
+            margin-top: 0;
+        }
+
+        .card .tier-description {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        .card .price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0284c7;
+            margin: 20px 0;
+        }
+
+        .card ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .card ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Modal / Pop-up for Email Collection */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .modal-content button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .modal-content button:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero" id="home">
+        <div class="hero-container">
+            <div class="hero-text">
+                <h1>Accountant Ability</h1>
+                <p style="font-size: 1.5rem; color: #334155;">Stop parsing. Start reviewing. Automate your tax prep workflow instantly.</p>
+            </div>
+            <div class="hero-demo">
+               <iframe width="560" height="315" src="https://www.youtube.com/watch?v=mW704EEZSsU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+        </div>
+        <a href="#pricing" class="arrow-down">↓</a>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <h2>Select Your Plan</h2>
+        <div class="pricing-cards">
+            
+            <div class="card open-modal-btn">
+                <h3>Free</h3>
+                <p class="tier-description">For testing the waters</p>
+                <div class="price">$0</div>
+                <ul>
+                    <li>✓ 5 Document Parses / month</li>
+                    <li>✓ Basic Form Population</li>
+                    <li>✓ Email Support</li>
+                </ul>
+            </div>
+
+            <div class="card open-modal-btn" style="border-color: #0284c7;">
+                <h3>Independent</h3>
+                <p class="tier-description">For solo practitioners ready to scale</p>
+                <div class="price">$15<span style="font-size: 1rem; color:#64748b;">/mo</span></div>
+                <ul>
+                    <li>✓ 50 Document Parses / month</li>
+                    <li>✓ Complex Form Population</li>
+                    <li>✓ Email Support</li>
+                </ul>
+            </div>
+
+            <div class="card open-modal-btn">
+                <h3>Professional</h3>
+                <p class="tier-description">For firms that need it all</p>
+                <div class="price">$25<span style="font-size: 1rem; color:#64748b;">/mo</span></div>
+                <ul>
+                    <li>✓ Unlimited Document Parsing</li>
+                    <li>✓ Complex Form Population</li>
+                    <li>✓ Direct Integration</li>
+                    <li>✓ Priority Support</li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="emailModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeBtn">&times;</span>
+            <h2>You caught us early!</h2>
+            <p>Accountant Ability is currently in active development. Enter your email below to lock in early access and we will notify you the second we launch.</p>
+            
+            <form id="waitlistForm">
+                <input type="email" placeholder="cpa@yourfirm.com" required>
+                <button type="submit">Join the Waitlist</button>
+            </form>
+            <p id="successMessage" style="display: none; color: #10b981; margin-top: 15px; font-weight: bold;">Thanks! We will be in touch soon.</p>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('emailModal');
+        const btns = document.querySelectorAll('.open-modal-btn');
+        const closeBtn = document.getElementById('closeBtn');
+        const form = document.getElementById('waitlistForm');
+        const successMessage = document.getElementById('successMessage');
+
+        // Open modal when any pricing button is clicked
+        btns.forEach(btn => {
+            btn.onclick = function() {
+                modal.style.display = 'flex';
+            }
+        });
+
+        // Close modal
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // Close modal if user clicks outside of it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Handle Form Submission (Simulation)
+        form.onsubmit = function(e) {
+            e.preventDefault(); // Prevents the page from refreshing
+            form.style.display = 'none'; // Hide the input field
+            successMessage.style.display = 'block'; // Show success text
+        }
+    </script>
+</body>
+</html>

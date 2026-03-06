@@ -292,9 +292,36 @@
         const form = document.getElementById('waitlistForm');
         const successMessage = document.getElementById('successMessage');
 
+        // --- Analytics: track unique tier clicks per session, send one row ---
+        const ANALYTICS_URL = 'https://script.google.com/macros/s/AKfycbwa_Vr5WQsls7qwtw8T1fTS73GBAYRaZpRXTJZqd-odmLFt68TOWzUXYtNokYmUZ2aR/exec';
+        const tierNames = ['Free', 'Independent', 'Professional'];
+        const clickedTiers = []; // ordered unique tier clicks
+        let lastClickedTier = '';
+        let submitted = false;
+
+        function sendRow(email) {
+            fetch(ANALYTICS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    click1: clickedTiers[0] || '',
+                    click2: clickedTiers[1] || '',
+                    click3: clickedTiers[2] || '',
+                    email: email || '',
+                    emailTier: email ? lastClickedTier : ''
+                }),
+                mode: 'no-cors'
+            }).catch(function() {});
+        }
+
         // Open modal when any pricing button is clicked
-        btns.forEach(btn => {
+        btns.forEach((btn, index) => {
             btn.onclick = function() {
+                var tier = tierNames[index];
+                if (clickedTiers.indexOf(tier) === -1) {
+                    clickedTiers.push(tier);
+                }
+                lastClickedTier = tier;
                 modal.style.display = 'flex';
             }
         });
@@ -311,12 +338,29 @@
             }
         }
 
-        // Handle Form Submission (Simulation)
+        // Handle Form Submission
         form.onsubmit = function(e) {
-            e.preventDefault(); // Prevents the page from refreshing
-            form.style.display = 'none'; // Hide the input field
-            successMessage.style.display = 'block'; // Show success text
+            e.preventDefault();
+            var email = form.querySelector('input[type="email"]').value;
+            sendRow(email);
+            submitted = true;
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
         }
+
+        // Send click-only data if user leaves without submitting email
+        window.addEventListener('beforeunload', function() {
+            if (!submitted && clickedTiers.length > 0) {
+                navigator.sendBeacon(ANALYTICS_URL, JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    click1: clickedTiers[0] || '',
+                    click2: clickedTiers[1] || '',
+                    click3: clickedTiers[2] || '',
+                    email: '',
+                    emailTier: ''
+                }));
+            }
+        });
     </script>
 </body>
 </html>

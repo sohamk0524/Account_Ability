@@ -529,31 +529,56 @@
             width: auto;
             padding: 16px 18px;
         }
-        .doc-preview {
+        /* Drop Zone */
+        .drop-zone {
             flex: 1;
             min-width: 0;
             min-height: 280px;
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
             border-radius: 12px;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.25s ease;
+            padding: 24px;
         }
-        .doc-preview .tax-return-preview {
-            border: none;
-            border-radius: 0;
-            margin: 0;
-            max-width: 100%;
-            flex: 1;
+        .drop-zone .drop-icon {
+            font-size: 2.8rem;
+            color: #94a3b8;
+            transition: transform 0.25s ease;
         }
-        .doc-preview .tax-return-field .tf-value.blank {
-            background: #f1f5f9;
-            border: 1px dashed #cbd5e1;
-            min-width: 80px;
-            padding: 0 6px;
-            border-radius: 2px;
-            color: transparent;
+        .drop-zone .drop-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+        }
+        .drop-zone .drop-subtext {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+        .drop-zone.drag-over {
+            border-color: #0284c7;
+            background: #e0f2fe;
+            transform: scale(1.02);
+        }
+        .drop-zone.drag-over .drop-icon {
+            transform: scale(1.15);
+            color: #0284c7;
+        }
+        .drop-zone.drag-over .drop-text {
+            color: #0369a1;
+        }
+        .doc-card[draggable="true"] {
+            cursor: grab;
+        }
+        .doc-card[draggable="true"]:active {
+            cursor: grabbing;
+            opacity: 0.7;
         }
 
         /* State 4: Tax Return Preview */
@@ -645,7 +670,8 @@
             .sim-state-1 .state1-layout { flex-direction: column; }
             .sim-state-1 .state1-layout > .doc-options { flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; justify-content: center; }
             .sim-state-1 .state1-layout > .doc-options .doc-card { width: 100%; max-width: 280px; }
-            .doc-preview { min-height: 200px; }
+            .drop-zone { min-height: 160px; }
+            .drop-zone .drop-subtext { display: none; }
             .tax-return-preview { max-width: 100%; }
         }
     </style>
@@ -671,7 +697,7 @@
     <!-- ========== Interactive UI Simulation ========== -->
     <section class="simulation" id="simulation">
         <h2>Experience the Workflow: From Chaos to Completed Return in Seconds</h2>
-        <p class="sim-subtitle">Click a document below to see Accountant Ability in action.</p>
+        <p class="sim-subtitle">Drag a document into the upload zone to see Accountant Ability in action.</p>
 
         <div class="sim-container">
             <div class="sim-topbar">
@@ -684,26 +710,29 @@
 
                 <!-- State 1: Document Selection -->
                 <div class="sim-state sim-state-1 active" id="simState1">
-                    <p class="prompt">Select a document to process:</p>
+                    <p class="prompt">Drag a document into the upload zone to process it:</p>
                     <div class="state1-layout">
                         <div class="doc-options">
-                            <div class="doc-card" onclick="simStart('k1')" onmouseenter="simPreview('k1')" onmouseleave="simPreviewClear()">
+                            <div class="doc-card" draggable="true" data-doc="k1" onclick="simStart('k1')">
                                 <div class="doc-icon">📄</div>
                                 <div class="doc-name">Complex K-1</div>
                                 <div class="doc-desc">Multi-State Partnership</div>
                             </div>
-                            <div class="doc-card" onclick="simStart('w2')" onmouseenter="simPreview('w2')" onmouseleave="simPreviewClear()">
+                            <div class="doc-card" draggable="true" data-doc="w2" onclick="simStart('w2')">
                                 <div class="doc-icon">📋</div>
                                 <div class="doc-name">Messy W-2</div>
                                 <div class="doc-desc">Handwritten Corrections</div>
                             </div>
-                            <div class="doc-card" onclick="simStart('1099')" onmouseenter="simPreview('1099')" onmouseleave="simPreviewClear()">
+                            <div class="doc-card" draggable="true" data-doc="1099" onclick="simStart('1099')">
                                 <div class="doc-icon">📑</div>
                                 <div class="doc-name">Scanned 1099-B</div>
                                 <div class="doc-desc">Low-Res Brokerage Scan</div>
                             </div>
                         </div>
-                        <div class="doc-preview" id="docPreview">
+                        <div class="drop-zone" id="dropZone">
+                            <div class="drop-icon">&#8685;</div>
+                            <div class="drop-text">Drop document here</div>
+                            <div class="drop-subtext">Drag a form from the left to begin processing</div>
                         </div>
                     </div>
                 </div>
@@ -870,63 +899,8 @@
         var simTimers = [];
         var STEP_DELAY = 1500; // ms per processing step
 
-        // Blank tax form previews (what the user would normally fill by hand)
-        var simFormPreviews = {
-            k1: {
-                formNum: 'Schedule K-1',
-                formSub: '(Form 1065)',
-                year: 'Tax Year 2024',
-                dept: 'Department of the Treasury — Internal Revenue Service',
-                sections: [
-                    { label: 'Part I — Information About the Partnership', fields: [
-                        ["Partnership's name"], ["Partnership's EIN"], ["Partnership's address"]
-                    ]},
-                    { label: "Part III — Partner's Share of Income", fields: [
-                        ['1. Ordinary business income'], ['2. Net rental real estate income'],
-                        ['4. Guaranteed payments'], ['19a. Distributions — cash']
-                    ]},
-                    { label: 'State Allocation Schedule', fields: [
-                        ['State 1 — %'], ['State 2 — %'], ['State 3 — %']
-                    ]}
-                ]
-            },
-            w2: {
-                formNum: 'Form W-2',
-                formSub: 'Wage and Tax Statement',
-                year: 'Tax Year 2024',
-                dept: 'Department of the Treasury — Internal Revenue Service',
-                sections: [
-                    { label: 'Employee Information', fields: [
-                        ['Employee name'], ['SSN'], ['Employer name & address']
-                    ]},
-                    { label: 'Federal', fields: [
-                        ['1. Wages, tips, other compensation'], ['2. Federal income tax withheld'],
-                        ['3. Social security wages'], ['4. Social security tax withheld']
-                    ]},
-                    { label: 'State', fields: [
-                        ['15. State'], ['16. State wages'], ['17. State income tax']
-                    ]}
-                ]
-            },
-            '1099': {
-                formNum: 'Form 1099-B',
-                formSub: 'Proceeds From Broker Transactions',
-                year: 'Tax Year 2024',
-                dept: 'Department of the Treasury — Internal Revenue Service',
-                sections: [
-                    { label: 'Payer Information', fields: [
-                        ['Payer name'], ['Account number'], ['Recipient']
-                    ]},
-                    { label: 'Summary of Proceeds', fields: [
-                        ['1a. Total proceeds'], ['1e. Total cost basis'],
-                        ['Net gain / (loss)'], ['Transactions reported']
-                    ]},
-                    { label: 'Adjustments', fields: [
-                        ['1g. Wash sale loss disallowed'], ['Adjusted net gain'], ['Reporting basis']
-                    ]}
-                ]
-            }
-        };
+        // Drag-and-drop state
+        var draggedDoc = null;
 
         // Populated tax return previews (clean output)
         var simTaxReturns = {
@@ -1051,29 +1025,43 @@
             'Connecting to legacy tax prep tool API...'
         ];
 
-        // Document preview on hover (State 1) — shows blank tax form
-        function simPreview(docType) {
-            var el = document.getElementById('docPreview');
-            var fp = simFormPreviews[docType];
-            var html = '<div class="tax-return-preview">' +
-                '<div class="tax-return-top">' +
-                '<div class="form-number">' + fp.formNum + ' <span style="font-weight:400;font-size:0.9rem;">' + fp.formSub + '</span></div>' +
-                '<div class="form-year">' + fp.year + '</div>' +
-                '<div class="form-dept">' + fp.dept + '</div></div>';
-            fp.sections.forEach(function(sec) {
-                html += '<div class="tax-return-section"><div class="section-label">' + sec.label + '</div>';
-                sec.fields.forEach(function(f) {
-                    html += '<div class="tax-return-field"><span class="tf-label">' + f[0] + '</span><span class="tf-value blank">________</span></div>';
+        // Drag-and-drop setup
+        function initDragDrop() {
+            var cards = document.querySelectorAll('.doc-card[draggable]');
+            var zone = document.getElementById('dropZone');
+
+            cards.forEach(function(card) {
+                card.addEventListener('dragstart', function(e) {
+                    draggedDoc = card.getAttribute('data-doc');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', draggedDoc);
+                    card.style.opacity = '0.5';
                 });
-                html += '</div>';
+                card.addEventListener('dragend', function() {
+                    card.style.opacity = '1';
+                    zone.classList.remove('drag-over');
+                    draggedDoc = null;
+                });
             });
-            html += '<div class="tax-return-footer" style="background:#fef2f2;color:#b91c1c;">Requires manual data entry</div>';
-            html += '</div>';
-            el.innerHTML = html;
+
+            zone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                zone.classList.add('drag-over');
+            });
+            zone.addEventListener('dragleave', function() {
+                zone.classList.remove('drag-over');
+            });
+            zone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                var docType = e.dataTransfer.getData('text/plain') || draggedDoc;
+                if (docType && simData[docType]) {
+                    simStart(docType);
+                }
+            });
         }
-        function simPreviewClear() {
-            simPreview('k1');
-        }
+        initDragDrop();
 
         // Build tax return HTML
         function buildTaxReturn(docType) {
@@ -1150,12 +1138,8 @@
 
         function simReset() {
             simClearTimers();
-            simPreview('k1');
             simSetState(1);
         }
-
-        // Show K-1 preview by default
-        simPreview('k1');
 
         // Send click-only data if user leaves without submitting email
         window.addEventListener('beforeunload', function() {

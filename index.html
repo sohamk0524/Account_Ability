@@ -686,7 +686,7 @@
             </div>
             <div class="hero-demo">
                 <video controls playsinline>
-                    <source src="Accountability Demo - Divyansh Rajesh Jain (1080p, h264).mp4" type="video/mp4">
+                    <source src="tax_prep_agent_demo_final.mp4" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -897,7 +897,7 @@
 
         // ========== Simulation Logic ==========
         var simTimers = [];
-        var STEP_DELAY = 1500; // ms per processing step
+        var STEP_DELAY = 1000; // ms per processing step
 
         // Drag-and-drop state
         var draggedDoc = null;
@@ -961,8 +961,7 @@
                     { label: 'Payer Information', fields: [
                         ['Payer', 'Fidelity Investments'],
                         ['Account number', '•••••8831'],
-                        ['Recipient', 'Michael T. Chen']
-                    ]},
+                        ['Recipient', 'Chris P. Bacon'] ]},
                     { label: 'Summary of Proceeds', fields: [
                         ['1a. Total proceeds', '$213,409.72'],
                         ['1e. Total cost basis', '$198,117.40'],
@@ -1019,10 +1018,10 @@
 
         var processingSteps = [
             'Analyzing document structure...',
+            'Scanning for "business" expenses...',
             'Extracting relevant data...',
-            'Redacting PII...',
-            'Parsing into tax schema...',
-            'Connecting to legacy tax prep tool API...'
+            'Appeasing the IRS overlords...',
+            'Scrubbing PII so nobody gets sued...'
         ];
 
         // Drag-and-drop setup
